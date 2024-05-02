@@ -17,32 +17,45 @@ hotels_data = []
 
 pattern = r'(\d+(?:\.\d+)?)\s*(km|m)'
 
-for hotel in hotels:
- 
- #NAME, PRICE, ADDRESS HOOKING
- name = hotel.find('div', {'data-testid': 'title'}).text.strip()
- price = hotel.find('span', {'data-testid': 'price-and-discounted-price'}).text.strip()
- address = hotel.find('span', {'data-testid': 'address'}).text.strip()
+def get_element_text(type, hotel, data_testid):
+    element = hotel.find(type, {'data-testid': data_testid})
+    if element is not None:
+        text = element.text.strip()
+        if text:
+            return text
+    return "NOT GIVEN"
 
- #DISTANCE HOOKING
- distance = hotel.find('span', {'data-testid': 'distance'}).text.strip()
- match = re.search(pattern, distance)
- if match:
-    distance = match.group(1) +" "+ match.group(2) 
- 
- #RATING HOOKING
- rating_div = hotel.find('div', {'data-testid': 'review-score'})
- rating_number = rating_div.find("div",{"class":"a3b8729ab1"}).contents[0].text.strip()
- rating_text = rating_div.find("div",{"class":"a3b8729ab1 e6208ee469 cb2cbb3ccb"}).text.strip()
- overall_rating = rating_text +" "+ rating_number
-   
- hotels_data.append({
- "name": name,
- "address": address,
- "distance": distance,
- "overall_rating": overall_rating,
- "price": price
- })
-hotels = pd.DataFrame(hotels_data)
+for hotel in hotels: 
+  name = get_element_text("div", hotel, "title")
+  price = get_element_text("span", hotel, "price-and-discounted-price")
+  address = get_element_text("span", hotel, "address")
+  
+  distance = get_element_text("span", hotel, "distance")
+  match = re.search(pattern, distance)
+  if match:
+      distance = match.group(1) +" "+ match.group(2) 
+  
+  #RATING HOOKING
+  rating_div = hotel.find('div', {'data-testid': 'review-score'})
+  if rating_div is not None:
+    rating_number = rating_div.find("div",{"class":"a3b8729ab1"}).contents[0]
+    if rating_number is not None:
+        rating_number = rating_number.text.strip()
+    rating_text = rating_div.find("div",{"class":"a3b8729ab1 e6208ee469 cb2cbb3ccb"})
+    if rating_text is not None:
+        rating_text = rating_text.text.strip()
+    overall_rating = "NOT GIVEN"
+    if rating_text != "NOT GIVEN" and rating_number != "NOT GIVEN":
+      overall_rating = rating_text +" "+ rating_number
+  
+  hotels_data.append({
+  "name": name,
+  "address": address,
+  "distance": distance,
+  "overall_rating": overall_rating,
+  "price": price
+  })
+
+hotels = pd.DataFrame(hotels_data[:10])
 hotels.head()
 hotels.to_csv('test_hotels.csv', header=True, index=False)
