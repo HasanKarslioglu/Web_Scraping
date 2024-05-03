@@ -27,7 +27,12 @@ def get_element_text(type, hotel, data_testid):
             return text
     return "NOT GIVEN"
 
-for hotel in hotels: 
+count = 0
+for hotel in hotels:
+  count += 1
+  if count == 11:
+     break
+   
   name = get_element_text("div", hotel, "title")
   price = get_element_text("span", hotel, "price-and-discounted-price")
   address = get_element_text("span", hotel, "address")
@@ -40,25 +45,25 @@ for hotel in hotels:
   #RATING HOOKING
   rating_div = hotel.find('div', {'data-testid': 'review-score'})
   if rating_div is not None:
+    
     rating_number = rating_div.find("div",{"class":"a3b8729ab1"}).contents[0]
     if rating_number is not None:
         rating_number = rating_number.text.strip()
+
     rating_text = rating_div.find("div",{"class":"a3b8729ab1 e6208ee469 cb2cbb3ccb"})
     if rating_text is not None:
         rating_text = rating_text.text.strip()
-    overall_rating = "NOT GIVEN"
-    if rating_text != "NOT GIVEN" and rating_number != "NOT GIVEN":
-      overall_rating = rating_text +" "+ rating_number
-  
+
   hotels_data.append({
   "name": name,
   "address": address,
   "distance": distance,
-  "overall_rating": overall_rating,
+  "ratingText": rating_text,
+  "ratingNumber": rating_number,
   "price": price
   })
 
-hotels = pd.DataFrame(hotels_data[:10])
+hotels = pd.DataFrame(hotels_data)
 hotels.head()
 hotels.to_csv('test_hotels.csv', header=True, index=False)
 
