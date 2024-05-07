@@ -1,11 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
-import csv
 import re
-
-def create_booking_url_template(city,dest_id, checkin_date, checkout_date):
-    return "https://www.booking.com/searchresults.html?ss={city}&ssne={city}&ssne_untouched={city}&label=gen173nr-1FCAEoggI46AdIM1gEaOQBiAEBmAExuAEHyAEP2AEB6AEBAECiAIBqAIDuAKo8sKxBsACAdICJGZlZWVmNGJjLWI2OGEtNGM0OS05ODk0LTM2ZGQ4YzkxYzY0MNgCBeACAQ&aid=304142&lang=en-us&sb=1&src_elem=sb&src=searchresults&dest_id={dest_id}&dest_type=city&checkin={checkin_date}&checkout={checkout_date}&group_adults=2&no_rooms=1&group_children=0".format(city=city, dest_id=dest_id,checkin_date=checkin_date, checkout_date=checkout_date)
 
 city_destId = {
     "Rome": -126693,
@@ -20,30 +16,21 @@ city_destId = {
     "Florence": -117543
 }
 
+def create_booking_url_template(city,dest_id, checkin_date, checkout_date):
+    return "https://www.booking.com/searchresults.html?ss={city}&ssne={city}&ssne_untouched={city}&label=gen173nr-1FCAEoggI46AdIM1gEaOQBiAEBmAExuAEHyAEP2AEB6AEBAECiAIBqAIDuAKo8sKxBsACAdICJGZlZWVmNGJjLWI2OGEtNGM0OS05ODk0LTM2ZGQ4YzkxYzY0MNgCBeACAQ&aid=304142&lang=en-us&sb=1&src_elem=sb&src=searchresults&dest_id={dest_id}&dest_type=city&checkin={checkin_date}&checkout={checkout_date}&group_adults=2&no_rooms=1&group_children=0".format(city=city, dest_id=dest_id,checkin_date=checkin_date, checkout_date=checkout_date)
+
 def request(city, checkin_date, checkout_date):
-    if city == "":
-        city = "Rome"
-    print(city)
-    print(checkin_date)
-    print(checkout_date)
 
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36", "Accept-Language": "en-US, en;q=0.5"}
-
     url = create_booking_url_template(city,city_destId.get(city), checkin_date, checkout_date)
-    print(url)
 
-    print("Request sended")
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print("Hata:", e)
         return False
 
-
     response = requests.get(url, headers=headers)
-    print("Request back", response.status_code)
-
     soup = BeautifulSoup(response.text, 'html.parser')
     hotels = soup.findAll('div', {'data-testid': 'property-card'})
     hotels_data = []
@@ -63,13 +50,12 @@ def request(city, checkin_date, checkout_date):
         if count == 11:
             break
 
-
         name = get_element_text("div", hotel, "title")
         price = get_element_text("span", hotel, "price-and-discounted-price")
         address = get_element_text("span", hotel, "address")
-        
         distance = get_element_text("span", hotel, "distance")
         match = re.search(pattern, distance)
+
         if match:
             distance = match.group(1) +" "+ match.group(2) 
         
@@ -94,12 +80,8 @@ def request(city, checkin_date, checkout_date):
         "price": price
         })
 
-
     hotels = pd.DataFrame(hotels_data)
-
     hotels.head()
-    hotels.to_csv('test_hotels.csv', header=True, index=False)
+    hotels.to_csv('myhotels.csv', header=True, index=False)
 
-
-    print("Completed!")
     return True
