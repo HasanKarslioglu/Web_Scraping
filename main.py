@@ -1,9 +1,7 @@
-from ttkbootstrap.constants import *
 import ttkbootstrap as tb
 from ttkbootstrap.dialogs import Messagebox
 import csv
 from datetime import date, timedelta, datetime
-import pandas as pd
 import request as rq
 
 def display_hotels():
@@ -80,7 +78,7 @@ def submit_pressed():
     update_old_informations()
     
 def update_price():
-    hotels = pd.read_csv('myhotels.csv')
+    hotels = rq.read_csv('myhotels.csv')
     if hotels['price'][1] == "NOT GIVEN":
         display_hotels()
         return
@@ -149,7 +147,6 @@ root = tb.Window(themename="superhero", size=[1080,600], minsize=[800,600])
 root.position_center()
 root.title("Find Hotels!")
 isEuro = tb.IntVar()
-
 frame_left = tb.Frame(root, style='Normal.TLabel')
 frame_left.grid(row=0, column=0, sticky='nswe', padx=10, pady=10)
 frame_right = tb.Frame(root, style='Normal.TLabel')
