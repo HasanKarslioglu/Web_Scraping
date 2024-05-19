@@ -3,6 +3,9 @@ import requests
 import pandas as pd
 import re
 
+def read_csv(str):
+    return pd.read_csv('myhotels.csv')
+
 city_destId = {
     "Rome": -126693,
     "Venice": -132007,
